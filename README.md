@@ -55,12 +55,15 @@ sudo docker compose up --build -d
 ```
 sudo docker exec -it backend_patrimonix npm run populate
 ```
-4. Login para teste:
+4. Login para teste:  
+- Login:
+
 ```
-Login: teste@gmail.com
+teste@gmail.com
 ```
+- Senha:
 ```
-Senha: senha123
+ senha123
 ```
 ## Contribuição
 
