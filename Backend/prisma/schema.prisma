@@ -1,0 +1,165 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Transaction {
+  id              String   @id @default(uuid()) @db.Char(40)
+  tax             Decimal  @db.Decimal(10, 2)
+  executionDate   DateTime
+  transactionType String
+  totalValue      Decimal  @db.Decimal(10, 2)
+
+  //atributos vindos da relaçao 
+  quantity    Int
+  price       Decimal @db.Decimal(10, 2)
+  //relacionamentos
+  User        User    @relation(fields: [userCpf], references: [cpf])
+  userCpf     String  @db.Char(11)
+  Ativo       Ativo   @relation(fields: [tradingCode], references: [tradingCode])
+  tradingCode String  @db.VarChar(6)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("transaction")
+}
+
+model Ativo {
+  tradingCode     String          @id @db.VarChar(40)
+  nomeInstituicao String          @db.VarChar(40)
+  cnpj            String?         @db.Char(14)
+  Tipo_Ativo      Tipo_Ativo?     @relation(fields: [tipo], references: [tipo])
+  tipo            String?
+  quotes          Quotes?         @relation(fields: [quote], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  quote           String?
+  Transaction     Transaction[]
+  RespostaAtivo   RespostaAtivo[]
+
+  @@map("ativo")
+}
+
+model Quotes {
+  id          String   @id @default(uuid()) @db.VarChar(40)
+  tradingCode String   @unique @db.VarChar(40)
+  price       Decimal  @db.Decimal(10, 2)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  Ativo Ativo[]
+
+  @@map("quotes")
+}
+
+model Tipo_Ativo {
+  id   Int    @id @default(autoincrement())
+  tipo String @unique @db.VarChar(20)
+
+  Ativo Ativo[]
+
+  @@map("tipo_ativo")
+}
+
+model User {
+  cpf      String @id @db.Char(11)
+  name     String @db.VarChar(20)
+  lastName String @db.VarChar(20)
+  email    String @unique @db.VarChar(40)
+  password String @db.VarChar(70)
+  phone    String @db.Char(11)
+
+  Report        Report[]
+  Transaction   Transaction[]
+  Rentabilidade Rentabilidade[]
+  Meta          Meta[]
+
+  @@map("user")
+}
+
+model Meta {
+  id       String @id @default(uuid()) @db.Char(40)
+  nomeMeta String @db.VarChar(40)
+  dataMeta String @db.VarChar(10)
+  meta     Float
+  userId   String @db.Char(11)
+  User     User   @relation(fields: [userId], references: [cpf])
+
+  @@map("meta")
+}
+
+model Changelog {
+  id          Int      @id
+  sprint_name String   @db.VarChar(40)
+  Change      Change[]
+
+  @@map("changelog")
+}
+
+model Change {
+  id      String @id @default(uuid()) @db.Char(40)
+  message String @db.VarChar(200)
+
+  //relacionamento 1 - N 
+  changelogId Int
+  Changelog   Changelog @relation(fields: [changelogId], references: [id])
+
+  @@map("change")
+}
+
+model Pergunta {
+  id       Int    @id @default(autoincrement())
+  criterio String @db.VarChar(100)
+  texto    String @db.VarChar(500)
+
+  respostasAtivo RespostaAtivo[]
+
+  @@map("pergunta")
+}
+
+model RespostaAtivo {
+  id          Int     @id @default(autoincrement())
+  ativoCodigo String  @db.VarChar(40)
+  perguntaId  Int
+  resposta    Boolean
+
+  Ativo    Ativo    @relation(fields: [ativoCodigo], references: [tradingCode])
+  Pergunta Pergunta @relation(fields: [perguntaId], references: [id], onDelete: Cascade)
+
+  @@unique([ativoCodigo, perguntaId])
+  @@map("resposta_ativo")
+}
+
+model Report {
+  id          String   @id @default(uuid()) @db.Char(40)
+  titulo      String   @db.VarChar(40)
+  localizacao String?  @db.VarChar(30)
+  conteudo    String   @db.LongText()
+  createdAt   DateTime @default(now()) @map("created_at")
+  tipo        String   @db.VarChar(10)
+
+  User    User   @relation(fields: [userCpf], references: [cpf])
+  userCpf String @db.Char(11)
+
+  @@map("report")
+}
+
+model Rentabilidade {
+  id       String @id @default(uuid()) @db.Char(40)
+  month    String
+  carteira Float
+  cdi      Float
+  ibovespa Float
+  User     User   @relation(fields: [userCpf], references: [cpf])
+  userCpf  String @db.Char(11)
+
+  @@map("rentabilidade")
+}

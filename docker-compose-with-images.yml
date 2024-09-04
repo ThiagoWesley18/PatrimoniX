@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+  db:
+    container_name: db_patrimonix
+    image: mysql:latest
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - patrimonix
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+
+  backend:
+    container_name: backend_patrimonix
+    image: abriciof/patrimonix_backend:latest
+    restart: always
+    networks:
+      - patrimonix
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    environment:
+      - DATABASE_URL=mysql://root:${MYSQL_PASSWORD}@db/${MYSQL_DATABASE}
+      - DEFAULT_LANG=${DEFAULT_LANG}
+      - NODE_ENV=${NODE_ENV}
+      - PORT=${BACKEND_PORT}
+    depends_on:
+      - db
+    command: >
+      sh -c "npx prisma generate && npm run deploy && npm start"
+
+  frontend:
+    container_name: frontend_patrimonix
+    image: abriciof/patrimonix_frontend:latest
+    restart: always
+    networks:
+      - patrimonix
+    ports:
+      - "${FRONTEND_PORT}:3000"
+    depends_on:
+      - db
+      - backend
+
+networks:
+  patrimonix:
+    driver: bridge
+
+volumes:
+  mysql_data:
