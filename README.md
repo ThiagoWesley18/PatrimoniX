@@ -18,6 +18,22 @@ O PatrimoniX é um sistema web responsivo desenvolvido para auxiliar no gerencia
 - Metas
 - Aporte Automatizado
 
+## Responsabilidades no Projeto
+
+- Frontend:
+    1. Página Metas
+    2. Melhoria da perfomarce na consulta ao Backend
+    3. Separação dos ativos pelo tipo e correções de bug na página Carteira
+
+- Backend:
+    1. Endpoint metas
+    2. Endpoint api
+
+- Banco de Dados:
+    1. Schema da tabela Quotes
+    2. Schema da tabela Metas
+
+
 ## Tecnologias Necessárias
 
 - Docker
@@ -34,12 +50,12 @@ O PatrimoniX é um sistema web responsivo desenvolvido para auxiliar no gerencia
 sudo docker compose up --build -d
 ```
 
-3. Popule o banco de dados com o comando:
+3. Popule o banco de dados pre cadastrados com o comando:
  
 ```
 sudo docker exec -it backend_patrimonix npm run populate
 ```
-4. Use para teste:
+4. Login para teste:
 ```
 Login: teste@gmail.com
 Senha: senha123
